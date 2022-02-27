@@ -1,0 +1,13 @@
+const app = require('../app');
+const http = require('http');
+const server = http.createServer(app);
+
+const port = 3000;
+app.set('port', port);
+server.listen(port);
+server.on('listening', () => {
+    const address = server.address();
+    console.log('Listening on ' + (
+        typeof address === 'string' ? address : 'port ' + address.port
+    ));
+});
