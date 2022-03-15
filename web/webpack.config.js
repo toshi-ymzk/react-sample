@@ -1,41 +1,42 @@
-const path = require('path')
-const HtmlWebpackPlugin = require("html-webpack-plugin")
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-    mode: "development",
-    entry: path.resolve(__dirname, "src/index.js"),
+    mode: 'development',
+    entry: path.resolve(__dirname, 'src/index.js'),
     output: {
-        path: path.resolve(__dirname, "build"),
-        filename: 'index.js'
+        path: path.resolve(__dirname, 'build'),
+        filename: 'index.js',
     },
     resolve: {
-        modules: [path.resolve(__dirname, "node_modules")],
-        extensions: [".js", ".jsx"]
+        modules: [path.resolve(__dirname, 'node_modules')],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     module: {
         rules: [
             {
                 test: [/\.js$/, /\.jsx$/],
-                loader: "babel-loader",
+                loader: 'babel-loader',
                 exclude: /node_modules/,
                 options: {
-                    presets: [
-                        "@babel/preset-env",
-                        "@babel/preset-react"
-                    ]
-                }
-            }
+                    presets: ['@babel/preset-env', '@babel/preset-react'],
+                },
+            },
+            {
+                test: [/\.ts$/, /\.tsx$/],
+                use: ['ts-loader'],
+            },
         ],
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: path.resolve(__dirname, "src/index.html")
-        })
+            template: path.resolve(__dirname, 'src/index.html'),
+        }),
     ],
     devServer: {
         static: {
-            directory: path.resolve(__dirname, "build"),
-            publicPath: '/'
-        }
-    }
+            directory: path.resolve(__dirname, 'build'),
+            publicPath: '/',
+        },
+    },
 };
