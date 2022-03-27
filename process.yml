@@ -1,0 +1,122 @@
+version: 2
+jobs:
+  setup:
+    working_directory: ~/work
+    docker:
+    - image: cimg/node:16.14.2
+    steps:
+    - checkout
+    - run:
+        name: Echo package.json
+        command: echo "$(<web/package.json)"
+    - run:
+        name: Install modules
+        command: npm install --prefix web
+    - save_cache:
+        name: Cache node modules
+        key: npm-{{ checksum "web/package.json" }}
+        paths:
+        - web/node_modules
+  lint:
+    working_directory: ~/work
+    docker:
+    - image: cimg/node:16.14.2
+    steps:
+    - checkout
+    - restore_cache:
+        name: Restore node modules
+        key: npm-{{ checksum "web/package.json" }}
+    - run:
+        name: Lint
+        command: npm run lint --prefix web
+  build:
+    working_directory: ~/work
+    docker:
+    - image: cimg/node:16.14.2
+    steps:
+    - checkout
+    - restore_cache:
+        name: Restore node modules
+        key: npm-{{ checksum "web/package.json" }}
+    - run:
+        name: Build
+        command: npm run build --prefix web
+workflows:
+  lint-and-build:
+    jobs:
+    - setup
+    - lint:
+        requires:
+        - setup
+    - build:
+        requires:
+        - setup
+  version: 2
+
+# Original config.yml file:
+# version: 2.1
+# 
+# executors:
+#     default:
+#         working_directory: ~/work
+#         docker:
+#             - image: cimg/node:16.14.2
+# 
+# commands:
+#     save_modules:
+#         steps:
+#             - save_cache:
+#                   name: Cache node modules
+#                   key: npm-{{ checksum \"web/package.json\" }}
+#                   paths:
+#                       - web/node_modules
+# 
+#     restore_modules:
+#         steps:
+#             - restore_cache:
+#                   name: Restore node modules
+#                   key: npm-{{ checksum \"web/package.json\" }}
+# 
+# jobs:
+#     setup:
+#         executor:
+#             name: default
+#         steps:
+#             - checkout
+#             - run:
+#                   name: Echo package.json
+#                   command: echo \"$(<web/package.json)\"
+#             - run:
+#                   name: Install modules
+#                   command: npm install --prefix web
+#             - save_modules
+#     lint:
+#         executor:
+#             name: default
+#         steps:
+#             - checkout
+#             - restore_modules
+#             - run:
+#                   name: Lint
+#                   command: npm run lint --prefix web
+# 
+#     build:
+#         executor:
+#             name: default
+#         steps:
+#             - checkout
+#             - restore_modules
+#             - run:
+#                   name: Build
+#                   command: npm run build --prefix web
+# 
+# workflows:
+#     lint-and-build:
+#         jobs:
+#             - setup
+#             - lint:
+#                   requires:
+#                       - setup
+#             - build:
+#                   requires:
+#                       - setup

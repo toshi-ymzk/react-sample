@@ -1,25 +1,66 @@
 version: 2.1
 
-jobs:
-    build:
+executors:
+    default:
+        working_directory: ~/work
         docker:
             - image: cimg/node:16.14.2
+
+commands:
+    save_modules:
+        steps:
+            - save_cache:
+                  name: Cache node modules
+                  key: npm-{{ checksum "web/package.json" }}
+                  paths:
+                      - web/node_modules
+
+    restore_modules:
+        steps:
+            - restore_cache:
+                  name: Restore node modules
+                  key: npm-{{ checksum "web/package.json" }}
+
+jobs:
+    setup:
+        executor:
+            name: default
         steps:
             - checkout
             - run:
-                  name: check package.json
+                  name: Echo package.json
                   command: echo "$(<web/package.json)"
             - run:
-                  name: install
-                  command: npm install --prefix ./web
+                  name: Install modules
+                  command: npm install --prefix web
+            - save_modules
+    lint:
+        executor:
+            name: default
+        steps:
+            - checkout
+            - restore_modules
             - run:
-                  name: lint
-                  command: npm run lint --prefix ./web
+                  name: Lint
+                  command: npm run lint --prefix web
+
+    build:
+        executor:
+            name: default
+        steps:
+            - checkout
+            - restore_modules
             - run:
-                  name: build
-                  command: npm run build --prefix ./web
+                  name: Build
+                  command: npm run build --prefix web
 
 workflows:
-    orb-free-workflow:
+    lint-and-build:
         jobs:
-            - build
+            - setup
+            - lint:
+                  requires:
+                      - setup
+            - build:
+                  requires:
+                      - setup
