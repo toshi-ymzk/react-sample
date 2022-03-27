@@ -15,6 +15,9 @@ jobs:
             - run:
                   name: build
                   command: npm run build --prefix ./web
+            - run:
+                  name: lint
+                  command: npm run lint --prefix ./web
 
 workflows:
     orb-free-workflow:
